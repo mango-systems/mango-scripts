@@ -67,18 +67,21 @@ for script_file in script_files:
         key_exists = os.path.exists(f"gpg_signatures/{KEY_NAME}.asc")
         if not key_exists or (key_exists and FORCE_OVERWRITE):
             try:
-                subprocess.check_output(["gpg", "--gen-key", "--batch", "--yes", "--passphrase", passphrase, f"--quick-gen-key", KEY_NAME], universal_newlines=True)
+                # Prepare the GPG command separately
+                gpg_gen_key_command = [
+                    "gpg",
+                    "--gen-key",
+                    "--batch",
+                    "--yes",
+                    "--passphrase", passphrase,
+                    f"--quick-gen-key", KEY_NAME
+                ]
+
+                # Execute the GPG command
+                subprocess.check_output(gpg_gen_key_command, universal_newlines=True)
                 print(f"[{Fore.GREEN}{get_current_time()}{Style.RESET_ALL}] GPG key pair generated successfully for {script_file}.")
             except subprocess.CalledProcessError as e:
                 print(f"[{Fore.RED}{get_current_time()}{Style.RESET_ALL}] Error generating GPG key pair for {script_file}:", e)
-
-        # Sign the script with the generated GPG key
-        try:
-            subprocess.check_output(["gpg", "--sign", "--local-user", KEY_NAME, "--yes", "--passphrase", passphrase, "-o", signature_path, script_path], universal_newlines=True)
-            print(f"[{Fore.GREEN}{get_current_time()}{Style.RESET_ALL}] {script_file} signed successfully.")
-        except subprocess.CalledProcessError as e:
-            print(f"[{Fore.RED}{get_current_time()}{Style.RESET_ALL}] Error signing {script_file} with GPG:", e)
-            continue
 
     # Initialize a dictionary to store the extracted information for this script
     extracted_data = {}
