@@ -1,2 +1,2 @@
-PyYAML==5.4.1
+colorama==0.4.4
 PyYAML==6.0.1

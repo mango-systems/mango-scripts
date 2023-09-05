@@ -1,3 +1,3 @@
 key_name: "MSM Mandal"
-script_location_prefix: https://example.com/scripts/
-signature_location_prefix: https://example.com/signatures/
+script_location_prefix: https://github.com/msm-linux/mango-scripts/scripts/
+signature_location_prefix: https://github.com/msm-linux/mango-scripts/signatures/

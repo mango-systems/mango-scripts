@@ -3,9 +3,7 @@ import re
 import yaml
 import subprocess
 import time
-import secrets  # Python built-in CSPRNG module
 from colorama import init, Fore, Style
-import threading
 
 # Initialize Colorama for terminal color formatting
 init(autoreset=True)
@@ -35,10 +33,7 @@ def get_current_time():
 
 # Generate a random passphrase for GPG
 def generate_random_passphrase():
-    return secrets.token_hex(16)
-
-# Create a lock for GPG operations
-gpg_lock = threading.Lock()
+    return os.urandom(16).hex()
 
 # Initialize a dictionary to store the extracted information
 all_scripts_data = []
@@ -53,32 +48,28 @@ if not os.path.exists("scripts"):
 # List all script files in the "scripts" folder
 script_files = os.listdir("scripts")
 
+# Generate a GPG key pair (if not already done or if force overwrite is True)
+key_exists = os.path.exists(f"gpg_signatures/{KEY_NAME}.asc")
+if not key_exists or (key_exists and FORCE_OVERWRITE):
+    passphrase = generate_random_passphrase()
+    try:
+        subprocess.check_output(["gpg", "--gen-key", "--batch", "--yes", "--passphrase", passphrase, f"--quick-gen-key", KEY_NAME], universal_newlines=True)
+        print(f"[{Fore.GREEN}{get_current_time()}{Style.RESET_ALL}] GPG key pair generated successfully.")
+    except subprocess.CalledProcessError as e:
+        print(f"[{Fore.RED}{get_current_time()}{Style.RESET_ALL}] Error generating GPG key pair:", e)
+
 # Loop through script files
 for script_file in script_files:
     script_path = os.path.join("scripts", script_file)
     signature_path = os.path.join("gpg_signatures", f"{script_file}.asc")
 
-    # Generate a unique passphrase for each script
-    passphrase = generate_random_passphrase()
-
-    # Acquire the GPG lock to ensure sequential GPG operations
-    with gpg_lock:
-        # Generate a GPG key pair (if not already done or if force overwrite is True)
-        key_exists = os.path.exists(f"gpg_signatures/{KEY_NAME}.asc")
-        if not key_exists or (key_exists and FORCE_OVERWRITE):
-            try:
-                subprocess.check_output(["gpg", "--gen-key", "--batch", "--yes", "--passphrase", passphrase, f"--quick-gen-key", KEY_NAME], universal_newlines=True)
-                print(f"[{Fore.GREEN}{get_current_time()}{Style.RESET_ALL}] GPG key pair generated successfully for {script_file}.")
-            except subprocess.CalledProcessError as e:
-                print(f"[{Fore.RED}{get_current_time()}{Style.RESET_ALL}] Error generating GPG key pair for {script_file}:", e)
-
-        # Sign the script with the generated GPG key
-        try:
-            subprocess.check_output(["gpg", "--sign", "--local-user", KEY_NAME, "--yes", "--passphrase", passphrase, "-o", signature_path, script_path], universal_newlines=True)
-            print(f"[{Fore.GREEN}{get_current_time()}{Style.RESET_ALL}] {script_file} signed successfully.")
-        except subprocess.CalledProcessError as e:
-            print(f"[{Fore.RED}{get_current_time()}{Style.RESET_ALL}] Error signing {script_file} with GPG:", e)
-            continue
+    # Sign the script with the generated GPG key
+    try:
+        subprocess.check_output(["gpg", "--sign", "--local-user", KEY_NAME, "--yes", "--passphrase", passphrase, "-o", signature_path, script_path], universal_newlines=True)
+        print(f"[{Fore.GREEN}{get_current_time()}{Style.RESET_ALL}] {script_file} signed successfully.")
+    except subprocess.CalledProcessError as e:
+        print(f"[{Fore.RED}{get_current_time()}{Style.RESET_ALL}] Error signing {script_file} with GPG:", e)
+        continue
 
     # Initialize a dictionary to store the extracted information for this script
     extracted_data = {}
@@ -94,9 +85,6 @@ for script_file in script_files:
     # Add the script and signature locations to the extracted data
     extracted_data["script_location"] = f"{SCRIPT_LOCATION_PREFIX}{script_file}"
     extracted_data["signature_location"] = f"{SIGNATURE_LOCATION_PREFIX}{script_file}.asc"
-
-    # Add the generated passphrase to the extracted data
-    extracted_data["passphrase"] = passphrase
 
     # Append the extracted data to the list
     all_scripts_data.append(extracted_data)
