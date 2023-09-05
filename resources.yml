@@ -1,0 +1,15 @@
+'1':
+  Author: MSM1234
+  Description: Prints hello world
+  Title: Hello world
+  Verified: 'Yes'
+  script_location: example.com/scripts/template.sh
+  signature_location: example.com/signatures/template.sh.asc
+'2':
+  Author: MSM Mandal
+  Description: Installs Docker
+  Title: Install Docker
+  Verified: 'Yes'
+  Version: '1.0'
+  script_location: example.com/scripts/install_docker.sh
+  signature_location: example.com/signatures/install_docker.sh.asc

@@ -1,42 +1,36 @@
-# Script Name
+# Mango Scripts index
 
-Description of what the script does.
+Script and signaturs for Mango Dev Env scripts.
+The index is outputted as `resources.yml`
 
-## Table of Contents
+## To Build the repository and the signatures
 
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Examples](#examples)
-- [Documentation](#documentation)
-- [Contributing](#contributing)
-- [License](#license)
+Add which GPG key you want to use in `settings.yml`
 
-## Features
-
-- List the key features and functionalities of your script.
-- Explain why users might find it useful.
-
-## Requirements
-
-- List any prerequisites or dependencies needed to run the script.
-- Include instructions for installing or setting up these requirements.
-
-## Installation
-
-- Provide step-by-step installation instructions.
-- Include any specific setup or configuration steps required.
-
-## Usage
-
-- Explain how to use the script, including command-line options and arguments.
-- Provide usage examples.
-
-## Examples
-
-Here are some usage examples:
+Run build.py
 
 ```bash
-python script.py arg1 arg2
+python3 build.py
+```
+
+## To Build for local filesystem
+
+Change settings and add the ABSOLUTE location of the `scripts` and `signatures`
+
+## To generate your own index
+
+- generate you own gpg key `gpg --gen-key`
+- change which key you want to use in `key_name` field in `settings.yml`
+- run the build command: `python3 build.py`
+
+## Manage Dependencies
+
+- export all the dependencies to `requirements.txt` use <b>pipreqs</b> `pip install pipreqs`
+```bash
+pip3 install pipreqs
+pipreqs .
+```
+- install dependencies
+```bash
+pip3 install -r requirements.txt 
 ```
