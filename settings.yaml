@@ -1,3 +1,4 @@
-key_name: "MSM Mandal"
-script_location_prefix: https://github.com/msm-linux/mango-scripts/scripts/
-signature_location_prefix: https://github.com/msm-linux/mango-scripts/signatures/
+key_name: my_gpg_key
+script_location_prefix: https://example.com/scripts/
+signature_location_prefix: https://example.com/signatures/
+force_overwrite: False

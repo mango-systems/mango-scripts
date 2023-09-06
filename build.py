@@ -1,11 +1,10 @@
 import os
 import re
 import yaml
-import subprocess
+import hashlib
 import time
 import secrets  # Python built-in CSPRNG module
 from colorama import init, Fore, Style
-import threading
 
 # Initialize Colorama for terminal color formatting
 init(autoreset=True)
@@ -14,11 +13,8 @@ init(autoreset=True)
 with open('settings.yaml', 'r') as settings_file:
     settings = yaml.safe_load(settings_file)
 
-# Define the GPG key name and link prefixes from the settings
-KEY_NAME = settings.get("key_name", "my_gpg_key")
-SCRIPT_LOCATION_PREFIX = settings.get("script_location_prefix", "https://example.com/scripts/")
-SIGNATURE_LOCATION_PREFIX = settings.get("signature_location_prefix", "https://example.com/signatures/")
-FORCE_OVERWRITE = settings.get("force_overwrite", False)  # Set to True to force key overwrite
+# Define the SHA-256 signature folder at the root level
+SIGNATURE_FOLDER = 'sha_signatures'
 
 # Define the regex pattern to match the fields
 field_patterns = {
@@ -33,85 +29,51 @@ field_patterns = {
 def get_current_time():
     return time.strftime("%b %d %Y, %I:%M:%S%p")
 
-# Generate a random passphrase for GPG
+# Generate a random passphrase for SHA-256 signatures
 def generate_random_passphrase():
     return secrets.token_hex(16)
 
-# Create a lock for GPG operations
-gpg_lock = threading.Lock()
+# Create the SHA-256 signature for a given script
+def generate_sha256_signature(script_path):
+    sha256 = hashlib.sha256()
+    with open(script_path, 'rb') as script_file:
+        while True:
+            data = script_file.read(8192)
+            if not data:
+                break
+            sha256.update(data)
+    return sha256.hexdigest()
+
+# Create the signature folder at the root level if it doesn't exist
+if not os.path.exists(SIGNATURE_FOLDER):
+    os.makedirs(SIGNATURE_FOLDER)
+
+# List all script files in the "validated_scripts" folder
+validated_script_files = os.listdir("validated_scripts")
 
 # Initialize a dictionary to store the extracted information
 all_scripts_data = []
 
-# Create output folders if they don't exist
-if not os.path.exists("gpg_signatures"):
-    os.mkdir("gpg_signatures")
-
-if not os.path.exists("scripts"):
-    os.mkdir("scripts")
-
-if not os.path.exists("validated_scripts"):
-    os.mkdir("validated_scripts")
-
-# List all script files in the "scripts" folder
-script_files = os.listdir("scripts")
-
-# Loop through script files
-for script_file in script_files:
-    script_path = os.path.join("scripts", script_file)
-    validated_script_path = os.path.join("validated_scripts", script_file)
-    signature_path = os.path.join("gpg_signatures", f"{script_file}.asc")
-
-    # Check if the script in "scripts" is different from the one in "validated_scripts"
-    if not os.path.exists(validated_script_path) or (
-        os.path.getmtime(script_path) > os.path.getmtime(validated_script_path)
-    ):
-        # Copy the script to "validated_scripts"
-        os.system(f"cp {script_path} {validated_script_path}")
-
-        # Update the "Last Updated" field in the script
-        with open(validated_script_path, "r") as script_file_content:
-            script_content = script_file_content.read()
-
-        updated_script_content = re.sub(
-            r'# Last Updated:\s*(.+)',
-            f'# Last Updated: {get_current_time()}',
-            script_content,
-        )
-
-        with open(validated_script_path, "w") as updated_script_file:
-            updated_script_file.write(updated_script_content)
+# Loop through script files in the "validated_scripts" folder
+for script_file in validated_script_files:
+    script_path = os.path.join("validated_scripts", script_file)
+    signature_path = os.path.join(SIGNATURE_FOLDER, f"{script_file}.sha256")
 
     # Generate a unique passphrase for each script
     passphrase = generate_random_passphrase()
 
-    # Acquire the GPG lock to ensure sequential GPG operations
-    with gpg_lock:
-        # Generate a GPG key pair (if not already done or if force overwrite is True)
-        key_exists = os.path.exists(f"gpg_signatures/{KEY_NAME}.asc")
-        if not key_exists or (key_exists and FORCE_OVERWRITE):
-            try:
-                # Prepare the GPG command separately
-                gpg_gen_key_command = [
-                    "gpg",
-                    "--gen-key",
-                    "--batch",
-                    "--yes",
-                    "--passphrase", passphrase,
-                    f"--quick-gen-key", KEY_NAME
-                ]
+    # Generate SHA-256 signature
+    signature = generate_sha256_signature(script_path)
 
-                # Execute the GPG command
-                subprocess.check_output(gpg_gen_key_command, universal_newlines=True)
-                print(f"[{Fore.GREEN}{get_current_time()}{Style.RESET_ALL}] GPG key pair generated successfully for {script_file}.")
-            except subprocess.CalledProcessError as e:
-                print(f"[{Fore.RED}{get_current_time()}{Style.RESET_ALL}] Error generating GPG key pair for {script_file}:", e)
+    # Save the SHA-256 signature to a file at the root level
+    with open(signature_path, 'w') as signature_file:
+        signature_file.write(signature)
 
     # Initialize a dictionary to store the extracted information for this script
     extracted_data = {}
 
     # Read the script file
-    with open(validated_script_path, 'r') as file:
+    with open(script_path, 'r') as file:
         for line in file:
             for field_name, pattern in field_patterns.items():
                 match = re.match(pattern, line)
@@ -119,18 +81,19 @@ for script_file in script_files:
                     extracted_data[field_name] = match.group(1)
 
     # Add the script and signature locations to the extracted data
-    extracted_data["script_location"] = f"{SCRIPT_LOCATION_PREFIX}{script_file}"
-    extracted_data["signature_location"] = f"{SIGNATURE_LOCATION_PREFIX}{script_file}.asc"
+    extracted_data["script_location"] = f"https://example.com/scripts/{script_file}"
+    extracted_data["signature_location"] = f"https://example.com/signatures/{script_file}.sha256"
 
-    # Add the generated passphrase to the extracted data
-    extracted_data["passphrase"] = passphrase
+    # Add the "last_modified" field to the extracted data
+    last_modified = os.path.getmtime(script_path)
+    extracted_data["last_modified"] = time.strftime("%b %d %Y, %I:%M:%S%p", time.localtime(last_modified))
 
     # Append the extracted data to the list
     all_scripts_data.append(extracted_data)
 
 # Create a YAML dictionary with script information numbered as
 # 1, 2, 3, ...
-yaml_data = {str(i + 1): script_data for i, script_data in enumerate(all_scripts_data)}
+yaml_data = {str(i + 1): {k: v for k, v in script_data.items() if k != "passphrase"} for i, script_data in enumerate(all_scripts_data)}
 
 # Output the YAML data to resources.yml
 with open('resources.yml', 'w') as yaml_file:
