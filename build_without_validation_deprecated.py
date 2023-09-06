@@ -29,9 +29,9 @@ field_patterns = {
     "Description": r'# Description:\s*(.+)',
 }
 
-# Get the current time in the specified format
+# Get the current time in 12-hour format with seconds
 def get_current_time():
-    return time.strftime("%b %d %Y, %I:%M:%S%p")
+    return time.strftime("%I:%M:%S %p")
 
 # Generate a random passphrase for GPG
 def generate_random_passphrase():
@@ -50,37 +50,13 @@ if not os.path.exists("gpg_signatures"):
 if not os.path.exists("scripts"):
     os.mkdir("scripts")
 
-if not os.path.exists("validated_scripts"):
-    os.mkdir("validated_scripts")
-
 # List all script files in the "scripts" folder
 script_files = os.listdir("scripts")
 
 # Loop through script files
 for script_file in script_files:
     script_path = os.path.join("scripts", script_file)
-    validated_script_path = os.path.join("validated_scripts", script_file)
     signature_path = os.path.join("gpg_signatures", f"{script_file}.asc")
-
-    # Check if the script in "scripts" is different from the one in "validated_scripts"
-    if not os.path.exists(validated_script_path) or (
-        os.path.getmtime(script_path) > os.path.getmtime(validated_script_path)
-    ):
-        # Copy the script to "validated_scripts"
-        os.system(f"cp {script_path} {validated_script_path}")
-
-        # Update the "Last Updated" field in the script
-        with open(validated_script_path, "r") as script_file_content:
-            script_content = script_file_content.read()
-
-        updated_script_content = re.sub(
-            r'# Last Updated:\s*(.+)',
-            f'# Last Updated: {get_current_time()}',
-            script_content,
-        )
-
-        with open(validated_script_path, "w") as updated_script_file:
-            updated_script_file.write(updated_script_content)
 
     # Generate a unique passphrase for each script
     passphrase = generate_random_passphrase()
@@ -111,7 +87,7 @@ for script_file in script_files:
     extracted_data = {}
 
     # Read the script file
-    with open(validated_script_path, 'r') as file:
+    with open(script_path, 'r') as file:
         for line in file:
             for field_name, pattern in field_patterns.items():
                 match = re.match(pattern, line)
@@ -128,8 +104,7 @@ for script_file in script_files:
     # Append the extracted data to the list
     all_scripts_data.append(extracted_data)
 
-# Create a YAML dictionary with script information numbered as
-# 1, 2, 3, ...
+# Create a YAML dictionary with script information numbered as 1, 2, 3, ...
 yaml_data = {str(i + 1): script_data for i, script_data in enumerate(all_scripts_data)}
 
 # Output the YAML data to resources.yml
