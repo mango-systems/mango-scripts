@@ -3,7 +3,7 @@
   Description: Prints hello world
   Title: Hello world
   Verified: 'Yes'
-  passphrase: 1b054ef0a0473a8ed93b2db3bc0eefff
+  passphrase: 0996cadb193bf4be20b80f5cf9d49dcb
   script_location: https://github.com/msm-linux/mango-scripts/scripts/template.sh
   signature_location: https://github.com/msm-linux/mango-scripts/signatures/template.sh.asc
 '2':
@@ -12,6 +12,6 @@
   Title: Install Docker
   Verified: 'Yes'
   Version: '1.0'
-  passphrase: 4261a835fb970dfde083340bc762fddd
+  passphrase: 28273b2c45dec00ad303ae53ce70dcfe
   script_location: https://github.com/msm-linux/mango-scripts/scripts/install-docker.sh
   signature_location: https://github.com/msm-linux/mango-scripts/signatures/install-docker.sh.asc
