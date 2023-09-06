@@ -4,8 +4,8 @@
   Title: Hello world
   Verified: 'Yes'
   last_modified: Sep 07 2023, 12:31:54AM
-  script_location: https://msm.com/scripts/template.sh
-  signature_location: https://msm.com/signatures/template.sh.sha256
+  script_location: https://raw.githubusercontent.com/msm-linux/mango-scripts/master/validated_scripts/template.sh
+  signature_location: https://raw.githubusercontent.com/msm-linux/mango-scripts/master/sha_signatures/template.sh.sha256
 '2':
   Author: MSM Mandal
   Description: Installs Docker
@@ -13,21 +13,21 @@
   Verified: 'Yes'
   Version: '1.0'
   last_modified: Sep 07 2023, 12:31:54AM
-  script_location: https://msm.com/scripts/install-docker.sh
-  signature_location: https://msm.com/signatures/install-docker.sh.sha256
+  script_location: https://raw.githubusercontent.com/msm-linux/mango-scripts/master/validated_scripts/install-docker.sh
+  signature_location: https://raw.githubusercontent.com/msm-linux/mango-scripts/master/sha_signatures/install-docker.sh.sha256
 '3':
   Author: MSM1234
   Description: Prints hello world
   Title: Hello world
   Verified: 'Yes'
   last_modified: Sep 07 2023, 12:53:48AM
-  script_location: https://msm.com/scripts/template-test-3.sh
-  signature_location: https://msm.com/signatures/template-test-3.sh.sha256
+  script_location: https://raw.githubusercontent.com/msm-linux/mango-scripts/master/validated_scripts/template-test-3.sh
+  signature_location: https://raw.githubusercontent.com/msm-linux/mango-scripts/master/sha_signatures/template-test-3.sh.sha256
 '4':
   Author: MSM1234
   Description: Prints hello world
   Title: Hello world
   Verified: 'Yes'
   last_modified: Sep 07 2023, 12:31:54AM
-  script_location: https://msm.com/scripts/template_test_2.sh
-  signature_location: https://msm.com/signatures/template_test_2.sh.sha256
+  script_location: https://raw.githubusercontent.com/msm-linux/mango-scripts/master/validated_scripts/template_test_2.sh
+  signature_location: https://raw.githubusercontent.com/msm-linux/mango-scripts/master/sha_signatures/template_test_2.sh.sha256

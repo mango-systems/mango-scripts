@@ -1,4 +1,4 @@
 key_name: my_gpg_key
-script_location_prefix: https://msm.com/scripts/
-signature_location_prefix: https://msm.com/signatures/
+script_location_prefix: https://raw.githubusercontent.com/msm-linux/mango-scripts/master/validated_scripts/
+signature_location_prefix: https://raw.githubusercontent.com/msm-linux/mango-scripts/master/sha_signatures/
 force_overwrite: False
