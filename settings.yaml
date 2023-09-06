@@ -1,4 +1,4 @@
 key_name: my_gpg_key
-script_location_prefix: https://example.com/scripts/
-signature_location_prefix: https://example.com/signatures/
+script_location_prefix: https://msm.com/scripts/
+signature_location_prefix: https://msm.com/signatures/
 force_overwrite: False
